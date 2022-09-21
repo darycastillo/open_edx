@@ -7,10 +7,11 @@ Much of this file was broken out from views.py, previous history can be found th
 
 import json
 import logging
+import requests
 
 import six
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -48,6 +49,10 @@ from common.djangoapps import third_party_auth
 from common.djangoapps.track import segment
 from common.djangoapps.util.json_request import JsonResponse
 from common.djangoapps.util.password_policy_validators import normalize_password
+#from student.models import LoginFailures, UserProfile
+#from student.views import send_reactivation_email_for_user
+#from student.forms import send_password_reset_email_for_user
+#from track import segment
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -91,22 +96,81 @@ def _do_third_party_auth(request):
         raise AuthFailedError(message, error_code='third-party-auth-with-no-linked-account')
 
 
-def _get_user_by_email(request):
-    """
-    Finds a user object in the database based on the given request, ignores all fields except for email.
-    """
-    if 'email' not in request.POST or 'password' not in request.POST:
+# def _get_user_by_email(request):
+#     """
+#     Finds a user object in the database based on the given request, ignores all fields except for email.
+#     """
+#     if 'email' not in request.POST or 'password' not in request.POST:
+#         raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
+
+#     email = request.POST['email']
+
+#     try:
+#         return User.objects.get(email=email)
+#     except User.DoesNotExist:
+#         if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
+#             AUDIT_LOG.warning(u"Login failed - Unknown user email")
+#         else:
+#             AUDIT_LOG.warning(u"Login failed - Unknown user email: {0}".format(email))
+            
+def _get_user_by_cui(request):
+
+    if 'cui' not in request.POST or 'password' not in request.POST:
         raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
 
-    email = request.POST['email']
+    cui = request.POST['cui']
+    password = request.POST['password']
+    url = configuration_helpers.get_value('CUI_URL')
+    client_user = configuration_helpers.get_value('CUI_CLIENT_USER')
+    client_password = configuration_helpers.get_value('CUI_CLIENT_PASSWORD')
+
+    if not (url and client_user and client_password):
+        log.error('Set CUI_URL, CUI_CLIENT_USER, CUI_CLIENT_PASSWORD in SiteConfiguration')
+        raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
+
+    payload = {
+        'grant_type': 'password',
+        'username': cui,
+        'password': password
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'system': 'FpaR',
+    }
+    response = requests.request("POST", url, auth=(client_user, client_password), headers=headers, data=payload)
 
     try:
-        return User.objects.get(email=email)
+        response.raise_for_status()
+    except requests.HTTPError as er:
+        log.error(er)
+        raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
+    else:
+        response_json = response.json()
+
+    if not response_json.get('valid'):
+        raise AuthFailedError(_('Incorrect Unique Identification Code or password'))
+
+    try:
+        user = User.objects.get(username=cui)
     except User.DoesNotExist:
-        if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
-            AUDIT_LOG.warning(u"Login failed - Unknown user email")
-        else:
-            AUDIT_LOG.warning(u"Login failed - Unknown user email: {0}".format(email))
+        email = response_json.get('token', {}).get('user', {}).get('info', {}).get('email')
+
+        if email is None:
+            raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
+
+        user = User.objects.create(
+            username=cui,
+            email=email,
+            is_active=True
+        )
+        UserProfile.objects.create(user=user)
+
+    password = normalize_password(password)
+    user.set_password(password)
+    user.save()
+
+    return user
+
 
 
 def _check_excessive_login_attempts(user):
@@ -440,7 +504,7 @@ def login_user(request):
     _parse_analytics_param_for_course_id(request)
 
     third_party_auth_requested = third_party_auth.is_enabled() and pipeline.running(request)
-    first_party_auth_requested = bool(request.POST.get('email')) or bool(request.POST.get('password'))
+    first_party_auth_requested = bool(request.POST.get('cui')) or bool(request.POST.get('password'))
     is_user_third_party_authenticated = False
 
     set_custom_attribute('login_user_course_id', request.POST.get('course_id'))
@@ -466,7 +530,7 @@ def login_user(request):
                 response_content = e.get_response()
                 return JsonResponse(response_content, status=403)
         else:
-            user = _get_user_by_email(request)
+            user = _get_user_by_cui(request)
 
         _check_excessive_login_attempts(user)
 
@@ -555,7 +619,7 @@ class LoginSessionView(APIView):
     def get(self, request):
         return HttpResponse(get_login_session_form(request).to_json(), content_type="application/json")
 
-    @method_decorator(require_post_params(["email", "password"]))
+    @method_decorator(require_post_params(["cui", "password"]))
     @method_decorator(csrf_protect)
     def post(self, request):
         """Log in a user.
