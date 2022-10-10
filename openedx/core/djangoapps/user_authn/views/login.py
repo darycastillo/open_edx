@@ -120,7 +120,7 @@ def _get_user_by_cui(request):
 
     cui = request.POST['cui']
     password = request.POST['password']
-    url = 'http://nodeprodsiamp.mp:10426/user/oauth/login?onlytoken=true'#configuration_helpers.get_value('CUI_URL')
+    url = 'https://cb67-190-106-211-207.ngrok.io/user/oauth/login?onlytoken=true'#configuration_helpers.get_value('CUI_URL')
     #client_user = configuration_helpers.get_value('CUI_CLIENT_USER')
     #client_password = configuration_helpers.get_value('CUI_CLIENT_PASSWORD')
 #
