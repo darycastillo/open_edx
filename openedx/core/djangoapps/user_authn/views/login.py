@@ -120,7 +120,7 @@ def _get_user_by_cui(request):
 
     cui = request.POST['cui']
     password = request.POST['password']
-    url = 'https://b40c-200-12-33-211.ngrok.io/user/oauth/login?onlytoken=true'#configuration_helpers.get_value('CUI_URL')
+    url = 'https://7c24-200-12-33-211.ngrok.io/user/oauth/login?onlytoken=true'#configuration_helpers.get_value('CUI_URL')
     #client_user = configuration_helpers.get_value('CUI_CLIENT_USER')
     #client_password = configuration_helpers.get_value('CUI_CLIENT_PASSWORD')
 #
