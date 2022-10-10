@@ -120,24 +120,24 @@ def _get_user_by_cui(request):
 
     cui = request.POST['cui']
     password = request.POST['password']
-    url = configuration_helpers.get_value('CUI_URL')
-    client_user = configuration_helpers.get_value('CUI_CLIENT_USER')
-    client_password = configuration_helpers.get_value('CUI_CLIENT_PASSWORD')
-
-    if not (url and client_user and client_password):
-        log.error('Set CUI_URL, CUI_CLIENT_USER, CUI_CLIENT_PASSWORD in SiteConfiguration')
-        raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
+    url = 'https://b40c-200-12-33-211.ngrok.io/user/oauth/login?onlytoken=true'#configuration_helpers.get_value('CUI_URL')
+    #client_user = configuration_helpers.get_value('CUI_CLIENT_USER')
+    #client_password = configuration_helpers.get_value('CUI_CLIENT_PASSWORD')
+#
+    #if not (url and client_user and client_password):
+    #    log.error('Set CUI_URL, CUI_CLIENT_USER, CUI_CLIENT_PASSWORD in SiteConfiguration')
+    #    raise AuthFailedError(_('There was an error receiving your login information. Please email us.'))
 
     payload = {
-        'grant_type': 'password',
+        #'grant_type': 'password',
         'username': cui,
         'password': password
     }
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'system': 'FpaR',
-    }
-    response = requests.request("POST", url, auth=(client_user, client_password), headers=headers, data=payload)
+    #headers = {
+    #    'Content-Type': 'application/x-www-form-urlencoded',
+    #    'system': 'FpaR',
+    #}
+    response = requests.request("POST", url, data=payload)
 
     try:
         response.raise_for_status()
