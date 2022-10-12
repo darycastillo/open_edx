@@ -37,7 +37,7 @@ def get_logger_config(log_dir,
 
     logger_config = {
         'version': 1,
-        'disable_existing_loggers': True,
+        'disable_existing_loggers': False,
         'formatters': {
             'standard': {
                 'format': u'%(asctime)s %(levelname)s %(process)d '
@@ -110,7 +110,7 @@ def get_logger_config(log_dir,
         }
     }
 
-    return {} #logger_config 
+    return logger_config
 
 
 def log_python_warnings():
