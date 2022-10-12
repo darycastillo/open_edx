@@ -110,7 +110,7 @@ def get_logger_config(log_dir,
         }
     }
 
-    return logger_config
+    return {} #logger_config 
 
 
 def log_python_warnings():

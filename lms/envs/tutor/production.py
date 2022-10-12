@@ -77,15 +77,13 @@ ORA2_FILEUPLOAD_CACHE_NAME = "ora2-storage"
 # Change syslog-based loggers which don't work inside docker containers
 LOGGING["handlers"]["local"] = {
     "class": "logging.handlers.WatchedFileHandler",
-    # "filename": os.path.join(LOG_DIR, "all.log"),
-    "filename": os.path.join(LOG_DIR, "allsito.log"),
+    "filename": os.path.join(LOG_DIR, "all.log"),
     "formatter": "standard",
 }
 LOGGING["handlers"]["tracking"] = {
     "level": "DEBUG",
     "class": "logging.handlers.WatchedFileHandler",
-    # "filename": os.path.join(LOG_DIR, "tracking.log"),
-    "filename": os.path.join(LOG_DIR, "trackingsito.log"),
+    "filename": os.path.join(LOG_DIR, "tracking.log"),
     "formatter": "standard",
 }
 LOGGING["loggers"]["tracking"]["handlers"] = ["console", "local", "tracking"]
