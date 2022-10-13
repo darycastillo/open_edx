@@ -693,7 +693,7 @@ MIDDLEWARE = [
     'openedx.core.djangoapps.contentserver.middleware.StaticContentServer',
 
     'django.contrib.messages.middleware.MessageMiddleware',
-    'common.djangoapps.track.middleware.TrackMiddleware',
+    #'common.djangoapps.track.middleware.TrackMiddleware',
 
     # This is used to set or update the user language preferences.
     'openedx.core.djangoapps.lang_pref.middleware.LanguagePreferenceMiddleware',

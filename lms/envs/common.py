@@ -1721,7 +1721,7 @@ MIDDLEWARE = [
     'openedx.core.djangoapps.user_api.middleware.UserTagsEventContextMiddleware',
 
     'django.contrib.messages.middleware.MessageMiddleware',
-    'common.djangoapps.track.middleware.TrackMiddleware',
+    #'common.djangoapps.track.middleware.TrackMiddleware',
 
     # CORS and CSRF
     'corsheaders.middleware.CorsMiddleware',
