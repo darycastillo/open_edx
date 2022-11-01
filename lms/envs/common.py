@@ -1098,7 +1098,7 @@ USERNAME_PATTERN = r'(?P<username>{regex})'.format(regex=USERNAME_REGEX_PARTIAL)
 LMS_SEGMENT_KEY = None
 
 # FIXME: Should we be doing this truncation?
-TRACK_MAX_EVENT = 0
+TRACK_MAX_EVENT = 1
 
 DEBUG_TRACK_LOG = False
 
