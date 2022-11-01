@@ -1537,7 +1537,7 @@ LOGIN_ISSUE_SUPPORT_LINK = ''
 ############################## EVENT TRACKING #################################
 
 CMS_SEGMENT_KEY = None
-TRACK_MAX_EVENT = 1
+TRACK_MAX_EVENT = 0
 
 TRACKING_BACKENDS = {
     'logger': {
